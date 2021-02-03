@@ -72,7 +72,7 @@
 		WHERE request_code= #{LOT_NO}
 	</update>	
 
-	<!-- 생산계획 수세기-->
+	<!-- 생산계획 수세기--
 	<select id="db_p_paging" parameterType="hashmap" resultType="int">
 		SELECT COUNT(LOT_NO) FROM PR WHERE PR.IO IS NULL
 			<choose>
