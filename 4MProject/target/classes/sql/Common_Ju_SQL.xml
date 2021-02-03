@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="wh">
+
+	<!-- 제품 입고 등록 -->
+ 	<select id="In" parameterType="hashMap">
+		UPDATE PR SET FAIL=#{FAIL}, R_QUAN=#{R_QUAN}, IO=#{IO} WHERE LOT_NO=#{LOT_NO}
+	</select>
+	<!-- 제품 출고 등록 -->
+ 	<select id="Out" parameterType="hashMap">
+		UPDATE PR SET IO=#{IO}, OUT_DATE=sysdate()  WHERE LOT_NO=#{LOT_NO}
+	</select>
+	<!-- 미입고인 작업번호 전체 갯수 구하기 -->
+	<select id="LotAllCount" parameterType="hashMap" resultType="int">
+		SELECT COUNT(LOT_NO) FROM PR WHERE IO IS NULL
+	</select>
+	<!-- 입고된 작업번호 전체 갯수 구하기 -->
+	<select id="InLotAllCount" parameterType="hashMap" resultType="int">
+		SELECT COUNT(LOT_NO) FROM PR WHERE IO = 'O'
+	</select>
+	<!-- 입고된 제품번호 전체 갯수 구하기 -->
+	<select id="InPartAllCount" parameterType="hashMap" resultType="int">
+		SELECT COUNT(PART_NO) FROM PR WHERE IO = 'O'
+	</select>
+	<!-- 작업번호 검색 -->
+	<select id="LotAll" parameterType="hashMap" resultType="hashmap">
+		SELECT * FROM PR WHERE IO IS NULL
+		<choose>
+			<when test="PART_NO != null">
+				 AND PR.PART_NO=#{PART_NOF}
+			</when>
+			<when test="ORDER != null">
+				ORDER BY ${ORDER}
+			</when>
+			<when test="displayPost!=null">
+				LIMIT #{displayPost}, #{postNum}
+			</when>	
+		</choose>
+	</select>
+	<!-- 작업번호로 검색 -->
+	<select id="SeaLot" parameterType="hashMap" resultType="hashmap">
+		SELECT * FROM PR WHERE LOT_NO = #{LOT_NO}
+	</select>
+	<!-- 창고에 있는 제품 중 모델번호로 검색 -->
+	<select id="SeaPart" parameterType="hashMap" resultType="hashmap">
+		SELECT * FROM PR WHERE PART_NO = #{PART_NO} AND IO='O'
+		<choose>
+			<when test="LOT_NO != null">
+				 AND PR.LOT_NO=#{LOT_NO}
+			</when>
+			<when test="ORDER != null">
+				ORDER BY ${ORDER}
+			</when>
+			<when test="displayPost!=null">
+				LIMIT #{displayPost}, #{postNum}
+			</when>	
+		</choose>
+	</select>
+	<!-- 입고된 제품만 검색 -->
+	<select id="SeaLotAll" resultType="hashmap">
+		SELECT * FROM PR WHERE IO='O'
+		<choose>
+			<when test="LOT_NO != null">
+				 AND PR.LOT_NO=#{LOT_NO}
+			</when>
+			<when test="ORDER != null">
+				ORDER BY ${ORDER}
+			</when>
+			<when test="displayPost!=null">
+				LIMIT #{displayPost}, #{postNum}
+			</when>	
+		</choose>
+	</select>
+	<!-- 제품 이름 검색 -->
+	<select id="getPartName" parameterType="hashMap" resultType="hashmap">
+		SELECT distinct PR.PART_NO, BOM2.PART_NAME FROM BOM2, PR WHERE PR.PART_NO=BOM2.PART_NO;
+	</select>
+	<!-- 창고에 있는 제품 중 제품 정보 작업번호로 검색 -->
+	<select id="Cor" parameterType="hashMap" resultType="hashmap">
+		SELECT * FROM PR WHERE LOT_NO = #{LOT_NO} AND IO='O'
+	</select>
+	<!-- 창고에 있는 제품 중 제품 정보 수정 등록 -->
+	<select id="UpdateCor" parameterType="hashMap">
+		UPDATE PR SET FAIL=#{FAIL}, R_QUAN=#{R_QUAN} WHERE LOT_NO=#{LOT_NO}
+	</select>
+	
+</mapper>

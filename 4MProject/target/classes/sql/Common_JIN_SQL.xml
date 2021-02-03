@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="jin">
+
+	<select id="bom" parameterType="hashmap" resultType="hashmap">
+		select * from erp_db.BOM1 INNER join erp_db.BOM2 using(PART_NO)
+		<choose>
+			<when test="PART_NO != null">
+				where PART_NO = #{PART_NO}
+			</when>
+			<when test="PART_NO == null">
+				order by PART_NO LIMIT #{displayPost2}, #{postNum2}
+			</when>
+		</choose> 
+	</select>
+
+	<select id="ging" parameterType="hashmap" resultType="int">
+		SELECT COUNT(PART_NO) FROM erp_db.BOM1
+			<choose>
+				<when test="PART_NO != null">
+					WHERE PART_NO=#{PART_NO}
+				</when>
+			</choose>
+	</select>
+
+	<select id="managerList" parameterType="hashMap" resultType="hashMap">
+		SELECT * FROM USER
+		WHERE BINARY ID = #{id}
+		AND BINARY PW = #{pw}
+	</select>
+	
+	<select id="bomInsertOne" parameterType="hashMap" resultType="hashMap">
+		INSERT INTO erp_db.BOM1 VALUES (#{PART_NO}, #{M_NO1}, #{M_NO2}, #{M_NO3}, #{M_NO4}, #{M_NO5}, #{M_NO6}, #{L_TIME})
+	</select>
+	
+	<select id="bomInsertTwo" parameterType="hashMap" resultType="hashMap">
+		INSERT INTO erp_db.BOM2 VALUES (#{PART_NO}, #{EA1}, #{EA2}, #{EA3}, #{EA4}, #{EA5}, #{EA6}, #{PART_NAME})
+
+	</select>
+
+</mapper>

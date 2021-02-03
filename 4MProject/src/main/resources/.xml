@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="wh">
+
+<!--  	<select id="InOut" parameterType="hashMap">
+		INSERT INTO PR VALUES(#{LOT_NO}, #{PART_NAME}, #{PART_NO}, #{QUNA}, 'EA', #{S_DATE}, #{DEFCOUNT}, 'X')
+	</select> -->
+	
+	<select id="SeaLot" parameterType="hashMap" resultType="hashmap">
+		SELECT * FROM PR WHERE PART_NO = #{PART_NO} 
+	</select>
+	<select id="SeaLotAll" parameterType="hashMap" resultType="hashmap">
+		SELECT * FROM PR <!-- WHERE IO is not null -->
+	</select>
+	<select id="Cor" parameterType="hashMap" resultType="hashmap">
+		SELECT * FROM PR WHERE LOT_NO = #{LOT_NO} 
+	</select>
+	
+</mapper>

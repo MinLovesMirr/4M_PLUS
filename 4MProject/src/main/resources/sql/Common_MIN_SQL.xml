@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="common">
+
+	<!-- Test용 -->
+	<select id="getListofUser" parameterType="hashmap" resultType="hashmap">
+				SELECT * FROM USER;
+	</select> 
+		
+	<!-- IMS주문내역 페이징-->
+	<select id="orderlistPaging" parameterType="hashmap" resultType="int">
+		SELECT COUNT(t.request_code) 
+        FROM im_db.request_title t, im_db.request_detail d 
+		WHERE t.request_status = '신청'
+			AND t.request_code=d.request_code
+			AND make_factory='4M'
+			AND d.color_name='BLACK'
+	</select>
+	
+	<!-- IMS주문내역-->
+	<select id="orderlist" resultType="hashmap">
+		SELECT t.request_code, t.product_code, t.gender, t.unit_price, t.request_date, d.total
+			FROM im_db.request_title t, im_db.request_detail d 
+			WHERE t.request_code=d.request_code
+			AND t.make_factory = '4M'
+			AND t.request_status = '신청'
+			AND d.color_name='BLACK'
+			GROUP BY t.request_code, t.product_code, t.gender, t.unit_price, t.request_date, d.total
+			<choose>
+				<when test="request_code!= null">
+					 AND t.request_code=#{request_code}
+				</when>
+				<when test="ORDER != null">
+					ORDER BY ${ORDER}
+				</when>
+				<when test="displayPost!=null">
+					LIMIT #{displayPost}, #{postNum}
+				</when>	
+			</choose>
+	</select>
+			
+	<!-- IMS주문상세 -->
+	<select id="orderDetail"  parameterType="hashmap" resultType="hashmap">
+		SELECT d.request_code, t.product_code, t.gender, d.s, d.m, d.l, d.xl, d.f, d.total 
+		FROM im_db.request_detail d, im_db.request_title t
+  		WHERE d.request_code=t.request_code
+  		AND d.request_code = #{request_code}
+  		AND d.color_name='BLACK'
+   	 	GROUP BY d.request_code, t.product_code, t.gender, d.s, d.m, d.l, d.xl, d.f, d.total;
+	</select>	
+				
+	<!-- IMS주문정보 가져오기 -->
+	<select id="orderInsert"  parameterType="hashmap" resultType="hashmap">
+		SELECT d.request_code, d.product_code, d.total 
+		FROM im_db.request_detail d
+   	 	WHERE d.request_code = #{LOT_NO}
+		AND d.color_name='BLACK'
+	</select>	
+				
+	<!-- IMS상태 수정하기-대기로(공장서 생산중) -->
+	<update id="orderInsert2"  parameterType="hashmap">
+		UPDATE im_db.request_title 
+		SET request_status='대기' 
+		WHERE request_code= #{LOT_NO}
+	</update>	
+				
+	<!-- IMS상태 수정하기-입고로(공장서 출고) -->
+	<update id="orderOut"  parameterType="hashmap">
+		UPDATE im_db.request_title 
+		SET request_status='입고' 
+		WHERE request_code= #{LOT_NO}
+	</update>	
+
+	<!-- 생산계획 수세기-->
+	<select id="db_p_paging" parameterType="hashmap" resultType="int">
+		SELECT COUNT(LOT_NO) FROM PR WHERE PR.IO IS NULL
+			<choose>
+				<when test="LOT_NO != null">
+					 AND LOT_NO=#{LOT_NO}
+				</when>
+			</choose>
+	</select>
+
+ 	<!--  생산_기본화면 & 페이징-->
+	<select id="db_p_view_paging" parameterType="hashmap" resultType="hashmap">
+				SELECT PR.LOT_NO , PR.PART_NO, BOM2.PART_NAME, PR.QUAN, 
+				PR.UNIT, PR.S_DATE, PR.F_DATE FROM PR, BOM2 WHERE PR.PART_NO=BOM2.PART_NO AND PR.IO IS NULL
+		<choose>
+			<when test="LOT_NO != null">
+				 AND PR.LOT_NO=#{LOT_NO}
+			</when>
+			<when test="ORDER != null">
+				ORDER BY ${ORDER}
+			</when>
+			<when test="displayPost!=null">
+				LIMIT #{displayPost}, #{postNum}
+			</when>	
+		</choose>
+	</select> 
+	
+	
+	<!-- 과거 생산계획 수세기-->
+	<select id="db_pp_paging" parameterType="hashmap" resultType="int">
+		SELECT COUNT(LOT_NO) FROM PR WHERE IO IS NOT NULL
+			<choose>
+				<when test="LOT_NO != null">
+					 AND LOT_NO=#{LOT_NO}
+				</when>
+			</choose>
+	</select>
+	
+	 	<!--  생산_과거 기본화면 & 페이징-->
+	<select id="db_pp_view_paging" parameterType="hashmap" resultType="hashmap">
+				SELECT PR.LOT_NO , PR.PART_NO, BOM2.PART_NAME, PR.QUAN, PR.UNIT, 
+				PR.IO, PR.S_DATE, PR.F_DATE, PR.OUT_DATE FROM PR, BOM2 WHERE PR.PART_NO=BOM2.PART_NO AND PR.IO IS NOT NULL
+		<choose>
+			<when test="LOT_NO != null">
+				 AND PR.LOT_NO=#{LOT_NO}
+			</when>
+			<when test="ORDER != null">
+				ORDER BY ${ORDER}
+			</when>
+			<when test="displayPost!=null">
+				LIMIT #{displayPost2}, #{postNum2}
+			</when>	
+		</choose>
+	</select> 
+
+	<!--  생산_등록1:데이터 삽입기능 --> 
+	<insert id="db_p_inputf" parameterType="hashmap">
+		INSERT INTO PR(LOT_NO, PART_NO, QUAN, S_DATE, F_DATE) 
+			VALUES(#{LOT_NO}, #{PART_NO}, #{QUAN}, #{S_DATE}, date_add(#{S_DATE}, 
+				INTERVAL (SELECT L_TIME FROM BOM1 WHERE PART_NO=#{PART_NO}) DAY))
+	</insert>	
+
+	<!-- 생산_등록3:삽입된 데이터 이후에 자재가 충분히 있는가를 검증 -->
+	<select id="db_p_intputt" resultType="int">
+		SELECT if(SUM(SIGN(M_QUAN))=COUNT(M_NO), 0, -1) FROM WH;
+	</select>
+	
+	<!-- 중복 LOT_NO체크 -->
+	<select id="db_p_LOTchekcer" parameterType="hashmap" resultType="int">
+		SELECT COUNT(*) FROM PR WHERE LOT_NO=#{LOT_NO}
+	</select>
+
+	<!-- 날짜검색 -->
+	<select id= "db_p_s_d" parameterType="hashmap" resultType="String">
+		SELECT S_DATE FROM PR WHERE LOT_NO=#{LOT_NO}
+	</select>
+	
+	<!--  생산_수정:sysdate가 이전이면 수정 가능 (갯수만)--> 
+	<update id="db_p_update" parameterType="hashmap">
+		UPDATE PR SET QUAN = #{QUAN}, S_DATE = #{S_DATE}, F_DATE=date_add(#{S_DATE}, 
+				INTERVAL (SELECT L_TIME FROM BOM1 WHERE PART_NO=#{PART_NO}) DAY) 
+		WHERE LOT_NO=#{LOT_NO}
+	</update>	
+
+	<!--  생산_삭제:sysdate가 이전이면 삭제가능--> 
+	<delete id="db_p_delete" parameterType="hashmap">
+		DELETE FROM PR WHERE LOT_NO=#{LOT_NO} 
+	</delete>	
+
+	<!-- 자재 목록수-->
+	<select id="db_m_paging" parameterType="hashmap" resultType="int">
+		SELECT COUNT(M_NO) FROM WH
+			<choose>
+				<when test="M_NO != null">
+					 WHERE M_NO=#{M_NO}
+				</when>
+			</choose>
+	</select>
+
+	<!--  자재창고 조회 & 검색기능 --> 
+	<select id="db_m_view" parameterType="hashmap" resultType="hashmap">
+		SELECT M_NO, M_NAME, M_QUAN FROM WH
+		<choose>
+			<when test="M_NO != null">
+				 WHERE M_NO=#{M_NO}
+			</when>
+			<when test="ORDER != null">
+				ORDER BY ${ORDER}
+			</when>		
+		</choose>
+				LIMIT #{displayPost}, #{postNum}
+	</select> 
+
+	<!--  자재삽입기능 --> 
+	<update id="db_m_update" parameterType="hashmap" >
+				UPDATE WH SET M_QUAN=M_QUAN+#{PLUS_QUAN} WHERE M_NO=#{M_NO}; 
+	</update> 
+
+	<!--  새로운자재삽입기능 --> 
+	<insert id="db_m_input" parameterType="hashmap" >
+				INSERT INTO WH(M_NO, M_NAME, M_QUAN) VALUES(#{M_NO}, #{M_NAME},#{M_QUAN})
+	</insert> 	
+	
+	<!-- 중복 자재 체크 -->
+	<select id="db_m_NOchecker" resultType="int">
+		SELECT COUNT(*) FROM WH WHERE M_NO=#{M_NO}
+	</select>
+	
+
+</mapper>
