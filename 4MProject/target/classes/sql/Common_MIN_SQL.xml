@@ -16,6 +16,11 @@
 			AND t.request_code=d.request_code
 			AND make_factory='4M'
 			AND d.color_name='BLACK'
+		<choose>
+			<when test="request_code != null">
+				 AND t.request_code=#{request_code}
+			</when>
+		</choose>
 	</select>
 	
 	<!-- IMS주문내역-->
@@ -26,11 +31,14 @@
 			AND t.make_factory = '4M'
 			AND t.request_status = '신청'
 			AND d.color_name='BLACK'
-			GROUP BY t.request_code, t.product_code, t.gender, t.unit_price, t.request_date, d.total
+			
 			<choose>
-				<when test="request_code!= null">
+				<when test="request_code != null">
 					 AND t.request_code=#{request_code}
 				</when>
+			</choose>
+			GROUP BY t.request_code, t.product_code, t.gender, t.unit_price, t.request_date, d.total
+			<choose>
 				<when test="ORDER != null">
 					ORDER BY ${ORDER}
 				</when>
@@ -38,6 +46,7 @@
 					LIMIT #{displayPost}, #{postNum}
 				</when>	
 			</choose>
+			
 	</select>
 			
 	<!-- IMS주문상세 -->
@@ -57,6 +66,14 @@
    	 	WHERE d.request_code = #{LOT_NO}
 		AND d.color_name='BLACK'
 	</select>	
+	
+	<!-- IMS상태 원상복귀-신청으로(요청실패시) -->
+	<update id="orderInsertAgain"  parameterType="hashmap">
+		UPDATE im_db.request_title 
+		SET request_status='신청' 
+		WHERE request_code= #{LOT_NO}
+	</update>	
+				
 				
 	<!-- IMS상태 수정하기-대기로(공장서 생산중) -->
 	<update id="orderInsert2"  parameterType="hashmap">

@@ -27,8 +27,8 @@ function nullchecker(){
    <div class="sidebar"><jsp:include page="l_include.jsp"/></div>
 	<div class="bodyall">
 	<h1>IMS로부터 주문받은 내역입니다.</h1>
-		<form name="p_search" method="get" action="${contextPath}/p_view.do" onsubmit="return nullchecker()">
-		<input type="text" name="LOT_NO" placeholder="주문번호를 적어주세요"/>
+		<form name="o_search" method="get" action="${contextPath}/orderListPage.do" onsubmit="return nullchecker()">
+		<input type="text" name="request_code" placeholder="주문번호를 적어주세요"/>
 		<input type="submit" class="btn btn-primary" value="검색" />
 		</form>
 	<div class="tablediv">

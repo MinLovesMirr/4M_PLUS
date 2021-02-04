@@ -90,6 +90,7 @@ public class CommonDAO extends AbstractDAO {
 		int c =(Integer)selectOne("common.db_p_intputt");
 		if(c==-1) {
 				update("common.db_p_delete", map);
+				update("common.orderInsertAgain",map);
 				return c;
 		}else {
 			if(a>0) {

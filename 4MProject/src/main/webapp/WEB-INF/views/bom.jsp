@@ -10,8 +10,9 @@
 <style>
 	.include{position:absolute; padding-right:70;}
 	.bomlist{padding-top:20px; margin-left:250px;}
-	.tab{width:35px;} .tabd{width:70px;} .dds{width:410px;}
+	.tab{width:40px;} .tabd{width:70px;} .dds{width:410px;}
 	.fir{float:left; margin-right:30px;}
+	.m{width:40px;}
 </style>
 <script>
 function nullchecker(){
@@ -37,14 +38,14 @@ function nullchecker(){
 		<table class="table" border="1">
 		<c:forEach var="row" items="${list}">
 		<tr>
-			<th class="MNAME">모델번호</th>
-			<th class="MNAME">${row.M_NO1}</th>
-			<th class="MNAME">${row.M_NO2}</th>
-			<th class="MNAME">${row.M_NO3}</th>
-			<th class="MNAME">${row.M_NO4}</th>
-			<th class="MNAME">${row.M_NO5}</th>
-			<th class="MNAME">${row.M_NO6}</th>
-			<th width="180px">제작기간</th>
+			<th class="m">모델번호</th>
+			<th class="m">${row.M_NO1}</th>
+			<th class="m">${row.M_NO2}</th>
+			<th class="m">${row.M_NO3}</th>
+			<th class="m">${row.M_NO4}</th>
+			<th class="m">${row.M_NO5}</th>
+			<th class="m">${row.M_NO6}</th>
+			<th width="m">제작기간</th>
 		</tr>
 		<tr>
 			<td class="tabd">${row.PART_NO}</td>
